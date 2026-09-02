@@ -47,3 +47,8 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+
+# File for computation
+complete_featureCount_exon_table.tsv
+DE_experiment_design.tsv
+sample_info.tsv
