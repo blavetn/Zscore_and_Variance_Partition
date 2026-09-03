@@ -31,6 +31,9 @@ logcpmCount <- log2(cpmCount + 1) # we use this one !
 sample_info <- fread("sample_info.tsv", sep="\t",header=T)
 sample_info[!Sample %like% "^R", Sample:=paste0("R",Sample)]
 setorder(sample_info, "Sample")
+sample_info[, Timepoint_continuous:=as.integer(factor(Timepoint, levels=c("6h","24h","3d","7d","3m")))]
+sample_info[, Novaseq_Run_continuous:=as.integer(factor(Novaseq_Run, levels=c("A","B","C","D","E","F","G","I","J","K","L","M","N","O","P","Q")))]
+
 
 detect_outlier <- function(matOfCount, sample_info, 
                           gender = c("M","F","MF"), 
@@ -147,5 +150,48 @@ f6h[[9]]
 # plot robust Mahalanobis
 f6h[[10]]
 
+## Variance Partinioning
+df.si <- as.data.frame(sample_info)
+rownames(df.si)<-df.si$Sample
 
+# Specify variables to consider
+# Age is continuous so model it as a fixed effect
+# Individual and Tissue are both categorical,
+# so model them as random effects
+# Note the syntax used to specify random effects
+formul <- ~ (1 | Litter) + (1 | Hippocampus) +
+            (1 | Timepoint) + (1 | Gender) +
+            (1 | Treatment) + Library_Prep_batch +
+            (1 | Novaseq_Run)
 
+formulC <- ~ (1 | Litter) + (1 | Hippocampus) +
+            Timepoint_continuous + (1 | Gender) +
+            (1 | Treatment) + Library_Prep_batch +
+            Novaseq_Run_continuous
+
+# Fit model and extract results
+# 1) fit linear mixed model on gene expression
+# If categorical variables are specified,
+#     a linear mixed model is used
+# If all variables are modeled as fixed effects,
+#       a linear model is used
+# each entry in results is a regression model fit on a single gene
+# 2) extract variance fractions from each model fit
+# for each gene, returns fraction of variation attributable
+#       to each variable
+# Interpretation: the variance explained by each variables
+# after correcting for all other variables
+# Note that geneExpr can either be a matrix,
+# and EList output by voom() in the limma package,
+# or an ExpressionSet
+# log2 transformed
+varPart_logcpm <- fitExtractVarPartModel(log2Count, formul, df.si)
+varPartC_logcpm <- fitExtractVarPartModel(log2Count, formulC, df.si)
+
+# violin plot of contribution of each variable to total variance
+plotVarPart(varPart_logcpm)
+plotVarPart(varPartC_logcpm)
+
+# save result in RDS
+saveRDS(varPart_logcpm, "results/varPart_logcpm.RDS")
+saveRDS(varPartC_logcpm, "results/varPartC_logcpm.RDS")
