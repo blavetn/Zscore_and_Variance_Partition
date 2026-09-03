@@ -5,11 +5,18 @@ library("variancePartition")
 library(DESeq2)
 library(edgeR)
 
-# Loading raw count data
+# Loading raw count data and create matrix
 rawCount <- fread("complete_featureCount_exon_table.tsv", sep="\t", header=T) 
 rawCount[, `:=`(Chr=NULL, Start=NULL, End=NULL, Strand=NULL, Length=NULL)]
-matCount<-as.matrix(rawCount[,-1])
+names(rawCount) <- gsub("^X","R",names(rawCount))
+setcolorder(rawCount, sort(names(rawCount)))
+
+# create a matrix
+matCount <- as.matrix(rawCount[,-1])
 rownames(matCount)<-rawCount$Geneid
+
+# transformation
+log2Count <- log2(matCount + 1)
 cpmCount<-cpm(matCount)
 logcpmCount<-log2(cpmCount + 1)
 voomCount<-limma::voom(matCount)
@@ -17,10 +24,10 @@ voomCount<-limma::voom(matCount)
 
 # load sample info
 sample_info <- fread("sample_info.tsv", sep="\t",header=T)
-sample_info[!Sample %like% "^R", Sample:=paste0("X",Sample)]
-sample_info<-sample_info[Sample %in% names(rawCount),]
+sample_info[!Sample %like% "^R", Sample:=paste0("R",Sample)]
+# sample_info<-sample_info[Sample %in% names(rawCount),]
 # Batch labels are read as numeric but are categorical: convert to factors
-sample_info$Library_Prep_batch <- factor(sample_info$Library_Prep_batch)
+# sample_info$Library_Prep_batch <- factor(sample_info$Library_Prep_batch)
 sample_info[, continousTimepoint:=as.integer(factor(Timepoint, levels=c("6h","24h","3d","7d","3m")))]
 sample_info[, NS_run:=as.integer(factor(Novaseq_Run, levels=c("A","B","C","D","E","F","G","I","J","K","L","M","N","O","P","Q")))]
 
@@ -55,9 +62,10 @@ rownames(matt) <- dtt$Geneid
 # Individual and Tissue are both categorical,
 # so model them as random effects
 # Note the syntax used to specify random effects
-form <- ~ (1 | Treatment) + (1 | Gender) + (1 | Hippocampus) + (1 | Timepoint) + (1 | Litter) + (1 | Library_Prep_batch) + (1 | Novaseq_Run)
+form <- ~ (1 | Treatment) + (1 | Gender) + (1 | Hippocampus) + (1 | Timepoint) + (1 | Litter) + Library_Prep_batch + (1 | Novaseq_Run)
+formR <- ~ (1 | Treatment) + (1 | Gender) + (1 | Hippocampus) + (1 | Timepoint) + (1 | Litter) + Run + Library_Prep_batch
 
-formC <- ~ NS_run + continousTimepoint + (1 | Treatment) + (1 | Gender) + (1 | Hippocampus) + (1 | Litter) + (1 | Library_Prep_batch) 
+formC <- ~ NS_run + continousTimepoint + (1 | Treatment) + (1 | Gender) + (1 | Hippocampus) + (1 | Litter) + Library_Prep_batch 
 # Fit model and extract results
 # 1) fit linear mixed model on gene expression
 # If categorical variables are specified,
@@ -73,9 +81,23 @@ formC <- ~ NS_run + continousTimepoint + (1 | Treatment) + (1 | Gender) + (1 | H
 # Note that geneExpr can either be a matrix,
 # and EList output by voom() in the limma package,
 # or an ExpressionSet
-varPart <- fitExtractVarPartModel(cpmCount, form, sample_info)
+varPart_cpm <- fitExtractVarPartModel(cpmCount, form, sample_info)
 # varPartDS <- fitExtractVarPartModel(matt, form, sample_info)
-varPartL <- fitExtractVarPartModel(logcpmCount, form, sample_info)
+
+# log2 transformed
+varPart_log <- fitExtractVarPartModel(log2Count, form, sample_info)
+varPartC_log <- fitExtractVarPartModel(log2Count, formC, sample_info)
+varPartR_log <- fitExtractVarPartModel(log2Count, formR, sample_info)
+# violin plot of contribution of each variable to total variance
+plotVarPart(varPart_log)
+plotVarPart(varPartC_log)
+plotVarPart(varPartR_log)
+# save result in RDS
+saveRDS(varPart_log, "results/varPart_log.RDS")
+saveRDS(varPartC_log, "results/varPartC_log.RDS")
+saveRDS(varPartR_log, "results/varPartR_log.RDS")
+
+varPart_logcpm <- fitExtractVarPartModel(logcpmCount, form, sample_info)
 # varPartVoom <- fitExtractVarPartModel(voomCount, form, sample_info)
 
 varPart_C <- fitExtractVarPartModel(cpmCount, formC, sample_info)
