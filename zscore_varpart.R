@@ -64,8 +64,12 @@ detect_outlier <- function(matOfCount, sample_info,
   timepoint <- match.arg(timepoint)
   
   # select only info of interest
-  si <- sample_info[sample_info$Timepoint == timepoint & sample_info$Gender == gender,]
-  # select only count of interest
+  if(gender != "MF"){
+    si <- sample_info[sample_info$Timepoint == timepoint & sample_info$Gender == gender,]
+  }else{
+    si <- sample_info[sample_info$Timepoint == timepoint,]
+  }
+    # select only count of interest
   mat <- matOfCount[,si$Sample]
   
   # calculate the variance for each gene
@@ -143,6 +147,8 @@ detect_outlier <- function(matOfCount, sample_info,
     theme(legend.position="bottom") +
     ggtitle(paste0("Robust Mahalanobis PCA Outlier Detection - cutoff: ",maha_cutoff))
 
+  si<-as.data.frame(si)
+  rownames(si)<-si$Sample
   return(list(si,mat,prcomp_data,pc1_var,pc2_var,prdt,first_pca,z_pca,m_pca,mr_pca))
 }
 
@@ -157,6 +163,8 @@ rnor_f7d <- detect_outlier(rnor, sample_info, "F", "7d",T,2,5)
 rnor_m7d <- detect_outlier(rnor, sample_info, "M", "7d",T,2,5)
 rnor_f3m <- detect_outlier(rnor, sample_info, "F", "3m",T,2,5)
 rnor_m3m <- detect_outlier(rnor, sample_info, "M", "3m",T,2,5)
+
+rnor_mf6h <- detect_outlier(rnor, sample_info, "MF", "6h",T,2,5)
 
 # mRat
 mrat_f6h <- detect_outlier(mrat, sample_info, "F", "6h",T,2,5)
@@ -208,10 +216,22 @@ formul <- ~ (1 | Litter) + (1 | Hippocampus) +
             (1 | Treatment) + Library_Prep_batch +
             (1 | Novaseq_Run)
 
+formulF <- ~ (1 | Litter) + (1 | Hippocampus) +
+            (1 | Timepoint) + (1 | Gender) +
+            (1 | Treatment) + (1 | Library_Prep_batch) +
+            (1 | Novaseq_Run)
+
 formulC <- ~ (1 | Litter) + (1 | Hippocampus) +
             Timepoint_continuous + (1 | Gender) +
             (1 | Treatment) + Library_Prep_batch +
             Novaseq_Run_continuous
+
+formul_comp <- ~ (1 | Hippocampus) +
+            (1 | Treatment) + Library_Prep_batch 
+
+formul_comp_sex <- ~ (1 | Gender) + (1 | Hippocampus) +
+            (1 | Treatment) + Library_Prep_batch +
+            (1 | Litter)
 
 # Fit model and extract results
 # 1) fit linear mixed model on gene expression
@@ -235,6 +255,9 @@ varPart_grcr <- fitExtractVarPartModel(grcr, formul, df.si)
 # varPartC_rnor <- fitExtractVarPartModel(rnor, formulC, df.si)
 # varPartC_mrat <- fitExtractVarPartModel(mrat, formulC, df.si)
 # varPartC_grcr <- fitExtractVarPartModel(grcr, formulC, df.si)
+
+varPart_rnor_mf6h <- fitExtractVarPartModel(rnor_mf6h[[2]], formul_comp_sex, as.data.frame(rnor_mf6h[[1]]))
+
 
 # violin plot of contribution of each variable to total variance
 plotVarPart(varPart_rnor)
