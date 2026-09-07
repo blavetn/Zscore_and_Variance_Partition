@@ -50,7 +50,5 @@ rsconnect/
 
 # File for computation
 DESeq2/
+data/
 results/
-complete_featureCount_exon_table.tsv
-DE_experiment_design.tsv
-sample_info.tsv

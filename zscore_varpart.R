@@ -10,25 +10,44 @@ library(rrcov) # for PcaHubert()
 library(DGEobj.utils)
 library(ggrepel)
 
-# Loading raw count data and create matrix
-rawCount <- fread("complete_featureCount_exon_table.tsv", sep="\t", header=T) 
-rawCount[, `:=`(Chr=NULL, Start=NULL, End=NULL, Strand=NULL, Length=NULL)]
-names(rawCount) <- gsub("^X","R",names(rawCount))
-setcolorder(rawCount, sort(names(rawCount)))
+Rnor6 <- "complete_featureCount_exon_table_Rnor.tsv"
+mRatBN7 <- "complete_featureCount_exon_table_mRatBN.tsv"
+GRCr8 <- "complete_featureCount_exon_table_GRCr.tsv"
 
-# create a matrix
-matCount <- as.matrix(rawCount[,-1])
-rownames(matCount)<-rawCount$Geneid
+normalize.count <- function(rawcounttab = "complete_featureCount_exon_table_Rnor.tsv",
+                            transformation=c("log","cpm","logcpm","voom")){
+  
+  # Loading raw count data and create matrix
+  rawCount <- fread(rawcounttab, sep="\t", header=T) 
+  rawCount[, `:=`(Chr=NULL, Start=NULL, End=NULL, Strand=NULL, Length=NULL)]
+  names(rawCount) <- gsub("^X","R",names(rawCount))
+  setcolorder(rawCount, sort(names(rawCount)))
 
-# log2 transform the matrix
-log2Count <- log2(matCount + 1)
+  # create a matrix
+  matCount <- as.matrix(rawCount[,-1])
+  rownames(matCount)<-rawCount$Geneid
 
-# CPM transform
-cpmCount <- cpm(matCount,log = T)
-logcpmCount <- log2(cpmCount + 1) # we use this one !
+  # transformation
+  if(transformation == "log"){
+    normCount <- log2(matCount + 1)
+  }else if(transformation == "log"){
+    normCount<-cpm(matCount)
+  }else if(transformation == "logcpm"){
+    cpmCount<-cpm(matCount)
+    normCount<-log2(cpmCount + 1)
+  }else{
+    normCount<-limma::voom(matCount)
+  }
+
+  return(normCount)
+}
+
+rnor<-normalize.count(paste0("data/",Rnor6),"logcpm")
+mrat<-normalize.count(paste0("data/",mRatBN7),"logcpm")
+grcr<-normalize.count(paste0("data/",GRCr8),"logcpm")
 
 # load sample info
-sample_info <- fread("sample_info.tsv", sep="\t",header=T)
+sample_info <- fread("data/sample_info.tsv", sep="\t",header=T)
 sample_info[!Sample %like% "^R", Sample:=paste0("R",Sample)]
 setorder(sample_info, "Sample")
 sample_info[, Timepoint_continuous:=as.integer(factor(Timepoint, levels=c("6h","24h","3d","7d","3m")))]
@@ -127,16 +146,41 @@ detect_outlier <- function(matOfCount, sample_info,
   return(list(si,mat,prcomp_data,pc1_var,pc2_var,prdt,first_pca,z_pca,m_pca,mr_pca))
 }
 
-f6h <- detect_outlier(logcpmCount, sample_info, "F", "6h",T,2,5)
-m6h <- detect_outlier(logcpmCount, sample_info, "M", "6h",T,2,5)
-f24h <- detect_outlier(logcpmCount, sample_info, "F", "24h",T,2,5)
-m24h <- detect_outlier(logcpmCount, sample_info, "M", "24h",T,2,5)
-f3d <- detect_outlier(logcpmCount, sample_info, "F", "3d",T,2,5)
-m3d <- detect_outlier(logcpmCount, sample_info, "M", "3d",T,2,5)
-f7d <- detect_outlier(logcpmCount, sample_info, "F", "7d",T,2,5)
-m7d <- detect_outlier(logcpmCount, sample_info, "M", "7d",T,2,5)
-f3m <- detect_outlier(logcpmCount, sample_info, "F", "3m",T,2,5)
-m3m <- detect_outlier(logcpmCount, sample_info, "M", "3m",T,2,5)
+# Rnor
+rnor_f6h <- detect_outlier(rnor, sample_info, "F", "6h",T,2,5)
+rnor_m6h <- detect_outlier(rnor, sample_info, "M", "6h",T,2,5)
+rnor_f24h <- detect_outlier(rnor, sample_info, "F", "24h",T,2,5)
+rnor_m24h <- detect_outlier(rnor, sample_info, "M", "24h",T,2,5)
+rnor_f3d <- detect_outlier(rnor, sample_info, "F", "3d",T,2,5)
+rnor_m3d <- detect_outlier(rnor, sample_info, "M", "3d",T,2,5)
+rnor_f7d <- detect_outlier(rnor, sample_info, "F", "7d",T,2,5)
+rnor_m7d <- detect_outlier(rnor, sample_info, "M", "7d",T,2,5)
+rnor_f3m <- detect_outlier(rnor, sample_info, "F", "3m",T,2,5)
+rnor_m3m <- detect_outlier(rnor, sample_info, "M", "3m",T,2,5)
+
+# mRat
+mrat_f6h <- detect_outlier(mrat, sample_info, "F", "6h",T,2,5)
+mrat_m6h <- detect_outlier(mrat, sample_info, "M", "6h",T,2,5)
+mrat_f24h <- detect_outlier(mrat, sample_info, "F", "24h",T,2,5)
+mrat_m24h <- detect_outlier(mrat, sample_info, "M", "24h",T,2,5)
+mrat_f3d <- detect_outlier(mrat, sample_info, "F", "3d",T,2,5)
+mrat_m3d <- detect_outlier(mrat, sample_info, "M", "3d",T,2,5)
+mrat_f7d <- detect_outlier(mrat, sample_info, "F", "7d",T,2,5)
+mrat_m7d <- detect_outlier(mrat, sample_info, "M", "7d",T,2,5)
+mrat_f3m <- detect_outlier(mrat, sample_info, "F", "3m",T,2,5)
+mrat_m3m <- detect_outlier(mrat, sample_info, "M", "3m",T,2,5)
+
+# GRCr8
+grcr_f6h <- detect_outlier(grcr, sample_info, "F", "6h",T,2,5)
+grcr_m6h <- detect_outlier(grcr, sample_info, "M", "6h",T,2,5)
+grcr_f24h <- detect_outlier(grcr, sample_info, "F", "24h",T,2,5)
+grcr_m24h <- detect_outlier(grcr, sample_info, "M", "24h",T,2,5)
+grcr_f3d <- detect_outlier(grcr, sample_info, "F", "3d",T,2,5)
+grcr_m3d <- detect_outlier(grcr, sample_info, "M", "3d",T,2,5)
+grcr_f7d <- detect_outlier(grcr, sample_info, "F", "7d",T,2,5)
+grcr_m7d <- detect_outlier(grcr, sample_info, "M", "7d",T,2,5)
+grcr_f3m <- detect_outlier(grcr, sample_info, "F", "3m",T,2,5)
+grcr_m3m <- detect_outlier(grcr, sample_info, "M", "3m",T,2,5)
 
 # plot Hippocampus
 m6h[[7]] + geom_point(data=m6h[[6]], aes(PC1,PC2, color=Hippocampus),size=2) + scale_color_manual(values = brewer.pal(8,"Set1"))
@@ -185,13 +229,25 @@ formulC <- ~ (1 | Litter) + (1 | Hippocampus) +
 # and EList output by voom() in the limma package,
 # or an ExpressionSet
 # log2 transformed
-varPart_logcpm <- fitExtractVarPartModel(log2Count, formul, df.si)
-varPartC_logcpm <- fitExtractVarPartModel(log2Count, formulC, df.si)
+varPart_rnor <- fitExtractVarPartModel(rnor, formul, df.si)
+varPart_mrat <- fitExtractVarPartModel(mrat, formul, df.si)
+varPart_grcr <- fitExtractVarPartModel(grcr, formul, df.si)
+# varPartC_rnor <- fitExtractVarPartModel(rnor, formulC, df.si)
+# varPartC_mrat <- fitExtractVarPartModel(mrat, formulC, df.si)
+# varPartC_grcr <- fitExtractVarPartModel(grcr, formulC, df.si)
 
 # violin plot of contribution of each variable to total variance
-plotVarPart(varPart_logcpm)
-plotVarPart(varPartC_logcpm)
+plotVarPart(varPart_rnor)
+plotVarPart(varPart_mrat)
+plotVarPart(varPart_grcr)
+# plotVarPart(varPartC_rnor)
+# plotVarPart(varPartC_mrat)
+# plotVarPart(varPartC_grcr)
 
 # save result in RDS
-saveRDS(varPart_logcpm, "results/varPart_logcpm.RDS")
-saveRDS(varPartC_logcpm, "results/varPartC_logcpm.RDS")
+saveRDS(varPart_rnor, "results/varPart_rnor.RDS")
+saveRDS(varPart_mrat, "results/varPart_mrat.RDS")
+saveRDS(varPart_grcr, "results/varPart_grcr.RDS")
+# saveRDS(varPartC_rnor, "results/varPartC_rnor.RDS")
+# saveRDS(varPartC_mrat, "results/varPartC_mrat.RDS")
+# saveRDS(varPartC_grcr, "results/varPartC_grcr.RDS")
