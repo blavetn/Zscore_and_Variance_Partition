@@ -191,16 +191,16 @@ grcr_f3m <- detect_outlier(grcr, sample_info, "F", "3m",T,2,5)
 grcr_m3m <- detect_outlier(grcr, sample_info, "M", "3m",T,2,5)
 
 # plot Hippocampus
-m6h[[7]] + geom_point(data=m6h[[6]], aes(PC1,PC2, color=Hippocampus),size=2) + scale_color_manual(values = brewer.pal(8,"Set1"))
+rnor_m6h[[7]] + geom_point(data=m6h[[6]], aes(PC1,PC2, color=Hippocampus),size=2) + scale_color_manual(values = brewer.pal(8,"Set1"))
 
 # plot Z-score
-f6h[[8]] 
+rnor_f6h[[8]] 
 
 # plot Mahalanobis
-f6h[[9]]
+rnor_f6h[[9]]
 
 # plot robust Mahalanobis
-f6h[[10]]
+rnor_f6h[[10]]
 
 ## Variance Partinioning
 df.si <- as.data.frame(sample_info)
