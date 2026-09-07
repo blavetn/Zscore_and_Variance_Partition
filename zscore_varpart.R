@@ -211,24 +211,30 @@ rownames(df.si)<-df.si$Sample
 # Individual and Tissue are both categorical,
 # so model them as random effects
 # Note the syntax used to specify random effects
+
+# Use the data as they are: 
 formul <- ~ (1 | Litter) + (1 | Hippocampus) +
             (1 | Timepoint) + (1 | Gender) +
             (1 | Treatment) + Library_Prep_batch +
             (1 | Novaseq_Run)
 
+# alternate 1 - change Library_Prep_batch as factor
 formulF <- ~ (1 | Litter) + (1 | Hippocampus) +
             (1 | Timepoint) + (1 | Gender) +
             (1 | Treatment) + (1 | Library_Prep_batch) +
             (1 | Novaseq_Run)
 
+# alternate 2 - change timepoint and novaseq run as continuous variables
 formulC <- ~ (1 | Litter) + (1 | Hippocampus) +
             Timepoint_continuous + (1 | Gender) +
             (1 | Treatment) + Library_Prep_batch +
             Novaseq_Run_continuous
 
+# reduce to be used on comparison level ex: TF_6h vs CF_6h
 formul_comp <- ~ (1 | Hippocampus) +
             (1 | Treatment) + Library_Prep_batch 
 
+# reduce to be used on all sample from same timepoint ex: TF_6h, CF_6h, TM_6h, CM_6h
 formul_comp_sex <- ~ (1 | Gender) + (1 | Hippocampus) +
             (1 | Treatment) + Library_Prep_batch +
             (1 | Litter)
