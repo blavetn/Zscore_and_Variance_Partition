@@ -3,7 +3,7 @@ library(data.table)
 library(ggplot2)
 library(cowplot)
 library(RColorBrewer)
-library("variancePartition")
+library(variancePartition)
 library(DESeq2)
 library(edgeR)
 library(robustbase) # for covMcd() needed for robust Mahalanobis
