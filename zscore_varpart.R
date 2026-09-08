@@ -191,7 +191,7 @@ grcr_f3m <- detect_outlier(grcr, sample_info, "F", "3m",T,2,5)
 grcr_m3m <- detect_outlier(grcr, sample_info, "M", "3m",T,2,5)
 
 # plot Hippocampus
-rnor_m6h[[7]] + geom_point(data=m6h[[6]], aes(PC1,PC2, color=Hippocampus),size=2) + scale_color_manual(values = brewer.pal(8,"Set1"))
+rnor_m6h[[7]] + geom_point(data=rnor_m6h[[6]], aes(PC1,PC2, color=Hippocampus),size=2) + scale_color_manual(values = brewer.pal(8,"Set1"))
 
 # plot Z-score
 rnor_f6h[[8]] 
@@ -258,9 +258,13 @@ formul_comp_sex <- ~ (1 | Gender) + (1 | Hippocampus) +
 varPart_rnor <- fitExtractVarPartModel(rnor, formul, df.si)
 varPart_mrat <- fitExtractVarPartModel(mrat, formul, df.si)
 varPart_grcr <- fitExtractVarPartModel(grcr, formul, df.si)
-# varPartC_rnor <- fitExtractVarPartModel(rnor, formulC, df.si)
-# varPartC_mrat <- fitExtractVarPartModel(mrat, formulC, df.si)
-# varPartC_grcr <- fitExtractVarPartModel(grcr, formulC, df.si)
+varPartC_rnor <- fitExtractVarPartModel(rnor, formulC, df.si)
+varPartC_mrat <- fitExtractVarPartModel(mrat, formulC, df.si)
+varPartC_grcr <- fitExtractVarPartModel(grcr, formulC, df.si)
+varPartF_rnor <- fitExtractVarPartModel(rnor, formulF, df.si2)
+varPartF_mrat <- fitExtractVarPartModel(mrat, formulF, df.si2)
+varPartF_grcr <- fitExtractVarPartModel(grcr, formulF, df.si2)
+
 
 varPart_rnor_mf6h <- fitExtractVarPartModel(rnor_mf6h[[2]], formul_comp_sex, as.data.frame(rnor_mf6h[[1]]))
 
@@ -269,14 +273,22 @@ varPart_rnor_mf6h <- fitExtractVarPartModel(rnor_mf6h[[2]], formul_comp_sex, as.
 plotVarPart(varPart_rnor)
 plotVarPart(varPart_mrat)
 plotVarPart(varPart_grcr)
-# plotVarPart(varPartC_rnor)
-# plotVarPart(varPartC_mrat)
-# plotVarPart(varPartC_grcr)
+plotVarPart(varPartC_rnor)
+plotVarPart(varPartC_mrat)
+plotVarPart(varPartC_grcr)
+plotVarPart(varPartF_rnor)
+plotVarPart(varPartF_mrat)
+plotVarPart(varPartF_grcr)
 
 # save result in RDS
 saveRDS(varPart_rnor, "results/varPart_rnor.RDS")
 saveRDS(varPart_mrat, "results/varPart_mrat.RDS")
 saveRDS(varPart_grcr, "results/varPart_grcr.RDS")
-# saveRDS(varPartC_rnor, "results/varPartC_rnor.RDS")
-# saveRDS(varPartC_mrat, "results/varPartC_mrat.RDS")
-# saveRDS(varPartC_grcr, "results/varPartC_grcr.RDS")
+saveRDS(varPartC_rnor, "results/varPartC_rnor.RDS")
+saveRDS(varPartC_mrat, "results/varPartC_mrat.RDS")
+saveRDS(varPartC_grcr, "results/varPartC_grcr.RDS")
+saveRDS(varPartF_rnor, "results/varPartF_rnor.RDS")
+saveRDS(varPartF_mrat, "results/varPartF_mrat.RDS")
+saveRDS(varPartF_grcr, "results/varPartF_grcr.RDS")
+
+save.image("results/results.RData")
