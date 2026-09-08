@@ -1,6 +1,7 @@
 # load libraries
 library(data.table)
 library(ggplot2)
+library(cowplot)
 library(RColorBrewer)
 library("variancePartition")
 library(DESeq2)
@@ -270,15 +271,19 @@ varPart_rnor_mf6h <- fitExtractVarPartModel(rnor_mf6h[[2]], formul_comp_sex, as.
 
 
 # violin plot of contribution of each variable to total variance
-plotVarPart(varPart_rnor, main = "Variance partitioning - Rnor6.0\ncontinuous Library_prep_batch")
-plotVarPart(varPart_mrat, main = "Variance partitioning - mRatBN7.2\ncontinuous Library_prep_batch")
-plotVarPart(varPart_grcr, main = "Variance partitioning - GRCr8\ncontinuous Library_prep_batch")
-plotVarPart(varPartC_rnor, main = "Variance partitioning - Rnor6.0\ncontinuous Library_prep_batch, NovaSeq_run and Timepoint")
-plotVarPart(varPartC_mrat, main = "Variance partitioning - mRatBN7.2\ncontinuous Library_prep_batch, NovaSeq_run and Timepoint")
-plotVarPart(varPartC_grcr, main = "Variance partitioning - GRCr8\ncontinuous Library_prep_batch, NovaSeq_run and Timepoint")
-plotVarPart(varPartF_rnor, main = "Variance partitioning - Rnor6.0\nno continuous variable")
-plotVarPart(varPartF_mrat, main = "Variance partitioning - mRatBN7.2\nno continuous variable")
-plotVarPart(varPartF_grcr, main = "Variance partitioning - GRCr8\nno continuous variable")
+p1<-plotVarPart(varPart_rnor, main = "Variance partitioning - Rnor6.0\ncontinuous Library_prep_batch")
+p2<-plotVarPart(varPart_mrat, main = "Variance partitioning - mRatBN7.2\ncontinuous Library_prep_batch")
+p3<-plotVarPart(varPart_grcr, main = "Variance partitioning - GRCr8\ncontinuous Library_prep_batch")
+p4<-plotVarPart(varPartC_rnor, main = "Variance partitioning - Rnor6.0\ncontinuous Library_prep_batch,\nNovaSeq_run and Timepoint")
+p5<-plotVarPart(varPartC_mrat, main = "Variance partitioning - mRatBN7.2\ncontinuous Library_prep_batch,\nNovaSeq_run and Timepoint")
+p6<-plotVarPart(varPartC_grcr, main = "Variance partitioning - GRCr8\ncontinuous Library_prep_batch,\nNovaSeq_run and Timepoint")
+p7<-plotVarPart(varPartF_rnor, main = "Variance partitioning - Rnor6.0\nno continuous variable")
+p8<-plotVarPart(varPartF_mrat, main = "Variance partitioning - mRatBN7.2\nno continuous variable")
+p9<-plotVarPart(varPartF_grcr, main = "Variance partitioning - GRCr8\nno continuous variable")
+
+pp<-plot_grid(p1,p2,p3,p4,p5,p6,p7,p8,p9, nrow=3,align = "hv")
+
+ggsave2("results/Variance_partition_all_genome.png",pp,device=png,unit="in",width=12,height =12)
 
 # save result in RDS
 saveRDS(varPart_rnor, "results/varPart_rnor.RDS")
