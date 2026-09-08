@@ -270,15 +270,15 @@ varPart_rnor_mf6h <- fitExtractVarPartModel(rnor_mf6h[[2]], formul_comp_sex, as.
 
 
 # violin plot of contribution of each variable to total variance
-plotVarPart(varPart_rnor)
-plotVarPart(varPart_mrat)
-plotVarPart(varPart_grcr)
-plotVarPart(varPartC_rnor)
-plotVarPart(varPartC_mrat)
-plotVarPart(varPartC_grcr)
-plotVarPart(varPartF_rnor)
-plotVarPart(varPartF_mrat)
-plotVarPart(varPartF_grcr)
+plotVarPart(varPart_rnor, main = "Variance partitioning - Rnor6.0\ncontinuous Library_prep_batch")
+plotVarPart(varPart_mrat, main = "Variance partitioning - mRatBN7.2\ncontinuous Library_prep_batch")
+plotVarPart(varPart_grcr, main = "Variance partitioning - GRCr8\ncontinuous Library_prep_batch")
+plotVarPart(varPartC_rnor, main = "Variance partitioning - Rnor6.0\ncontinuous Library_prep_batch, NovaSeq_run and Timepoint")
+plotVarPart(varPartC_mrat, main = "Variance partitioning - mRatBN7.2\ncontinuous Library_prep_batch, NovaSeq_run and Timepoint")
+plotVarPart(varPartC_grcr, main = "Variance partitioning - GRCr8\ncontinuous Library_prep_batch, NovaSeq_run and Timepoint")
+plotVarPart(varPartF_rnor, main = "Variance partitioning - Rnor6.0\nno continuous variable")
+plotVarPart(varPartF_mrat, main = "Variance partitioning - mRatBN7.2\nno continuous variable")
+plotVarPart(varPartF_grcr, main = "Variance partitioning - GRCr8\nno continuous variable")
 
 # save result in RDS
 saveRDS(varPart_rnor, "results/varPart_rnor.RDS")
