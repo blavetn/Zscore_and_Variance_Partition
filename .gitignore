@@ -52,3 +52,6 @@ rsconnect/
 DESeq2/
 data/
 results/
+
+# Other
+.vscode/
