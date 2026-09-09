@@ -190,6 +190,12 @@ grcr_m7d <- detect_outlier(grcr, sample_info, "M", "7d",T,2,5)
 grcr_f3m <- detect_outlier(grcr, sample_info, "F", "3m",T,2,5)
 grcr_m3m <- detect_outlier(grcr, sample_info, "M", "3m",T,2,5)
 
+grcr_mf6h <- detect_outlier(rnor, sample_info, "MF", "6h",T,2,8)
+grcr_mf24h <- detect_outlier(rnor, sample_info, "MF", "24h",T,2,8)
+grcr_mf3d <- detect_outlier(rnor, sample_info, "MF", "3d",T,2,8)
+grcr_mf7d <- detect_outlier(rnor, sample_info, "MF", "7d",T,2,8)
+grcr_mf3m <- detect_outlier(rnor, sample_info, "MF", "3m",T,2,8)
+
 # plot Hippocampus
 rnor_m6h[[7]] + geom_point(data=rnor_m6h[[6]], aes(PC1,PC2, color=Hippocampus),size=2) + scale_color_manual(values = brewer.pal(8,"Set1"))
 
