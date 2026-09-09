@@ -153,6 +153,15 @@ detect_outlier <- function(matOfCount, sample_info,
   return(list(si,mat,prcomp_data,pc1_var,pc2_var,prdt,first_pca,z_pca,m_pca,mr_pca))
 }
 
+###
+### Mahalanobis cut-off choice:
+###
+### Cutoff	R code	D² value	Expected false positives (per sample)
+### 95%	qchisq(0.95, 2)	5.99	5%
+### 97.5%	qchisq(0.975, 2)	7.38	2.5%
+### 99%	qchisq(0.99, 2)	9.21	1%
+###
+
 # Rnor
 rnor_f6h <- detect_outlier(rnor, sample_info, "F", "6h",T,2,5)
 rnor_m6h <- detect_outlier(rnor, sample_info, "M", "6h",T,2,5)
@@ -180,22 +189,62 @@ mrat_f3m <- detect_outlier(mrat, sample_info, "F", "3m",T,2,5)
 mrat_m3m <- detect_outlier(mrat, sample_info, "M", "3m",T,2,5)
 
 # GRCr8
-grcr_f6h <- detect_outlier(grcr, sample_info, "F", "6h",T,2,5)
-grcr_m6h <- detect_outlier(grcr, sample_info, "M", "6h",T,2,5)
-grcr_f24h <- detect_outlier(grcr, sample_info, "F", "24h",T,2,5)
-grcr_m24h <- detect_outlier(grcr, sample_info, "M", "24h",T,2,5)
-grcr_f3d <- detect_outlier(grcr, sample_info, "F", "3d",T,2,5)
-grcr_m3d <- detect_outlier(grcr, sample_info, "M", "3d",T,2,5)
-grcr_f7d <- detect_outlier(grcr, sample_info, "F", "7d",T,2,5)
-grcr_m7d <- detect_outlier(grcr, sample_info, "M", "7d",T,2,5)
-grcr_f3m <- detect_outlier(grcr, sample_info, "F", "3m",T,2,5)
-grcr_m3m <- detect_outlier(grcr, sample_info, "M", "3m",T,2,5)
+grcr_f6h <- detect_outlier(grcr, sample_info, "F", "6h",T,2,9.21)
+grcr_m6h <- detect_outlier(grcr, sample_info, "M", "6h",T,2,9.21)
+grcr_f24h <- detect_outlier(grcr, sample_info, "F", "24h",T,2,9.21)
+grcr_m24h <- detect_outlier(grcr, sample_info, "M", "24h",T,2,9.21)
+grcr_f3d <- detect_outlier(grcr, sample_info, "F", "3d",T,2,9.21)
+grcr_m3d <- detect_outlier(grcr, sample_info, "M", "3d",T,2,9.21)
+grcr_f7d <- detect_outlier(grcr, sample_info, "F", "7d",T,2,9.21)
+grcr_m7d <- detect_outlier(grcr, sample_info, "M", "7d",T,2,9.21)
+grcr_f3m <- detect_outlier(grcr, sample_info, "F", "3m",T,2,9.21)
+grcr_m3m <- detect_outlier(grcr, sample_info, "M", "3m",T,2,9.21)
 
-grcr_mf6h <- detect_outlier(rnor, sample_info, "MF", "6h",T,2,8)
-grcr_mf24h <- detect_outlier(rnor, sample_info, "MF", "24h",T,2,8)
-grcr_mf3d <- detect_outlier(rnor, sample_info, "MF", "3d",T,2,8)
-grcr_mf7d <- detect_outlier(rnor, sample_info, "MF", "7d",T,2,8)
-grcr_mf3m <- detect_outlier(rnor, sample_info, "MF", "3m",T,2,8)
+grcr_mf6h <- detect_outlier(rnor, sample_info, "MF", "6h",T,2,9.21)
+grcr_mf24h <- detect_outlier(rnor, sample_info, "MF", "24h",T,2,9.21)
+grcr_mf3d <- detect_outlier(rnor, sample_info, "MF", "3d",T,2,9.21)
+grcr_mf7d <- detect_outlier(rnor, sample_info, "MF", "7d",T,2,9.21)
+grcr_mf3m <- detect_outlier(rnor, sample_info, "MF", "3m",T,2,9.21)
+
+# PCA for MF timepoints
+mf6h.plot<-grcr_mf6h[[7]] + geom_point(data=grcr_mf6h[[6]], aes(PC1,PC2, color=Gender),size=2) + 
+  scale_color_manual(values = brewer.pal(8,"Set1"))
+mf24h.plot<-grcr_mf24h[[7]] + geom_point(data=grcr_mf24h[[6]], aes(PC1,PC2, color=Gender),size=2) + 
+  scale_color_manual(values = brewer.pal(8,"Set1"))
+mf3d.plot<-grcr_mf3d[[7]] + geom_point(data=grcr_mf3d[[6]], aes(PC1,PC2, color=Gender),size=2) + 
+  scale_color_manual(values = brewer.pal(8,"Set1"))
+mf7d.plot<-grcr_mf7d[[7]] + geom_point(data=grcr_mf7d[[6]], aes(PC1,PC2, color=Gender),size=2) + 
+  scale_color_manual(values = brewer.pal(8,"Set1"))
+mf3m.plot<-grcr_mf3m[[7]] + geom_point(data=grcr_mf3m[[6]], aes(PC1,PC2, color=Gender),size=2) + 
+  scale_color_manual(values = brewer.pal(8,"Set1"))
+
+mf.plot<-cowplot::plot_grid(mf6h.plot,mf24h.plot,mf3d.plot,mf7d.plot,mf3m.plot, nrow=3, ncol=2)
+ggsave2("results/MF_all_pca.png",device=png,units = "in",width=11,height = 17, bg="white")
+
+MFplot<-function(ll=grcr_mf6h,output="MF6h_plot.png",width,height,device,units){
+  pca<-ll[[7]] + geom_point(data=ll[[6]], aes(PC1,PC2, color=Treatment),size=2) + 
+  scale_color_manual(values = brewer.pal(8,"Set1"))
+  zsc<-ll[[8]]
+  mah<-ll[[9]]
+  rmh<-ll[[10]]
+
+  p<-cowplot::plot_grid(pca, zsc, mah, rmh, nrow=2, align="hv")
+  ggsave2(output, p, device=device,width=width,height = height,units = units)
+}
+
+MFplot(grcr_m6h,"results/M6h_plot.png",width = 11,height = 11,units = "in",device = png)
+MFplot(grcr_m24h,"results/M24h_plot.png",width = 11,height = 11,units = "in",device = png)
+MFplot(grcr_m3d,"results/M3d_plot.png",width = 11,height = 11,units = "in",device = png)
+MFplot(grcr_m7d,"results/M7d_plot.png",width = 11,height = 11,units = "in",device = png)
+MFplot(grcr_m3m,"results/M3m_plot.png",width = 11,height = 11,units = "in",device = png)
+
+MFplot(grcr_f6h,"results/F6h_plot.png",width = 11,height = 11,units = "in",device = png)
+MFplot(grcr_f24h,"results/F24h_plot.png",width = 11,height = 11,units = "in",device = png)
+MFplot(grcr_f3d,"results/F3d_plot.png",width = 11,height = 11,units = "in",device = png)
+MFplot(grcr_f7d,"results/F7d_plot.png",width = 11,height = 11,units = "in",device = png)
+MFplot(grcr_f3m,"results/F3m_plot.png",width = 11,height = 11,units = "in",device = png)
+
+
 
 # plot Hippocampus
 rnor_m6h[[7]] + geom_point(data=rnor_m6h[[6]], aes(PC1,PC2, color=Hippocampus),size=2) + scale_color_manual(values = brewer.pal(8,"Set1"))
@@ -239,7 +288,7 @@ formulC <- ~ (1 | Litter) + (1 | Hippocampus) +
 
 # reduce to be used on comparison level ex: TF_6h vs CF_6h
 formul_comp <- ~ (1 | Hippocampus) +
-            (1 | Treatment) + Library_Prep_batch 
+            (1 | Treatment) + (1 | Library_Prep_batch) 
 
 # reduce to be used on all sample from same timepoint ex: TF_6h, CF_6h, TM_6h, CM_6h
 formul_comp_sex <- ~ (1 | Gender) + (1 | Hippocampus) +
@@ -272,9 +321,18 @@ varPartF_rnor <- fitExtractVarPartModel(rnor, formulF, df.si2)
 varPartF_mrat <- fitExtractVarPartModel(mrat, formulF, df.si2)
 varPartF_grcr <- fitExtractVarPartModel(grcr, formulF, df.si2)
 
+# Variance partitioning per comparison:
+varPart_grcr_f6h <- fitExtractVarPartModel(grcr_f6h[[2]], formul_comp, as.data.frame(grcr_f6h[[1]]))
+varPart_grcr_f24h <- fitExtractVarPartModel(grcr_f24h[[2]], formul_comp, as.data.frame(grcr_f24h[[1]]))
+varPart_grcr_f3d <- fitExtractVarPartModel(grcr_f3d[[2]], formul_comp, as.data.frame(grcr_f3d[[1]]))
+varPart_grcr_f7d <- fitExtractVarPartModel(grcr_f7d[[2]], formul_comp, as.data.frame(grcr_f7d[[1]]))
+varPart_grcr_f3m <- fitExtractVarPartModel(grcr_f3m[[2]], formul_comp, as.data.frame(grcr_f3m[[1]]))
 
-varPart_rnor_mf6h <- fitExtractVarPartModel(rnor_mf6h[[2]], formul_comp_sex, as.data.frame(rnor_mf6h[[1]]))
-
+varPart_grcr_m6h <- fitExtractVarPartModel(grcr_m6h[[2]], formul_comp, as.data.frame(grcr_m6h[[1]]))
+varPart_grcr_m24h <- fitExtractVarPartModel(grcr_m24h[[2]], formul_comp, as.data.frame(grcr_m24h[[1]]))
+varPart_grcr_m3d <- fitExtractVarPartModel(grcr_m3d[[2]], formul_comp, as.data.frame(grcr_m3d[[1]]))
+varPart_grcr_m7d <- fitExtractVarPartModel(grcr_m7d[[2]], formul_comp, as.data.frame(grcr_m7d[[1]]))
+varPart_grcr_m3m <- fitExtractVarPartModel(grcr_m3m[[2]], formul_comp, as.data.frame(grcr_m3m[[1]]))
 
 # violin plot of contribution of each variable to total variance
 p1<-plotVarPart(varPart_rnor, main = "Variance partitioning - Rnor6.0\ncontinuous Library_prep_batch")
@@ -291,6 +349,21 @@ pp<-plot_grid(p1,p2,p3,p4,p5,p6,p7,p8,p9, nrow=3,align = "hv")
 
 ggsave2("results/Variance_partition_all_genome.png",pp,device=png,unit="in",width=12,height =12)
 
+pp1<-plotVarPart(varPart_grcr_f6h, main = "Variance partitioning - F6h")
+pp2<-plotVarPart(varPart_grcr_f24h, main = "Variance partitioning - F24h")
+pp3<-plotVarPart(varPart_grcr_f3d, main = "Variance partitioning - F3d")
+pp4<-plotVarPart(varPart_grcr_f7d, main = "Variance partitioning - F7d")
+pp5<-plotVarPart(varPart_grcr_f3m, main = "Variance partitioning - F3m")
+ppp1<-plotVarPart(varPart_grcr_m6h, main = "Variance partitioning - M6h")
+ppp2<-plotVarPart(varPart_grcr_m24h, main = "Variance partitioning - M24h")
+ppp3<-plotVarPart(varPart_grcr_m3d, main = "Variance partitioning - M3d")
+ppp4<-plotVarPart(varPart_grcr_m7d, main = "Variance partitioning - M7d")
+ppp5<-plotVarPart(varPart_grcr_m3m, main = "Variance partitioning - M3m")
+
+ppp<-plot_grid(pp1,ppp1,pp2,ppp2,pp3,ppp3,pp4,ppp4,pp5,ppp5, ncol=2,align = "hv")
+
+ggsave2("results/Variance_partition_all_comparisons.png",ppp,device=png,unit="in",width=12,height =21)
+
 # save result in RDS
 saveRDS(varPart_rnor, "results/varPart_rnor.RDS")
 saveRDS(varPart_mrat, "results/varPart_mrat.RDS")
@@ -302,4 +375,16 @@ saveRDS(varPartF_rnor, "results/varPartF_rnor.RDS")
 saveRDS(varPartF_mrat, "results/varPartF_mrat.RDS")
 saveRDS(varPartF_grcr, "results/varPartF_grcr.RDS")
 
+saveRDS(varPart_grcr_f6h, "results/varPart_grcr_f6h.RDS")
+saveRDS(varPart_grcr_f24h, "results/varPart_grcr_f24h.RDS")
+saveRDS(varPart_grcr_f3d, "results/varPart_grcr_f3d.RDS")
+saveRDS(varPart_grcr_f7d, "results/varPart_grcr_f7d.RDS")
+saveRDS(varPart_grcr_f3m, "results/varPart_grcr_f3m.RDS")
+saveRDS(varPart_grcr_m6h, "results/varPart_grcr_m6h.RDS")
+saveRDS(varPart_grcr_m24h, "results/varPart_grcr_m24h.RDS")
+saveRDS(varPart_grcr_m3d, "results/varPart_grcr_m3d.RDS")
+saveRDS(varPart_grcr_m7d, "results/varPart_grcr_m7d.RDS")
+saveRDS(varPart_grcr_m3m, "results/varPart_grcr_m3m.RDS")
+
 save.image("results/results.RData")
+  
